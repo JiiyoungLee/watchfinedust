@@ -1,0 +1,10 @@
+#!/home/jiyoung/watchfinedust/myvenv/bin/python3
+# EASY-INSTALL-ENTRY-SCRIPT: 'closure==20161201','console_scripts','closure'
+__requires__ = 'closure==20161201'
+import sys
+from pkg_resources import load_entry_point
+
+if __name__ == '__main__':
+    sys.exit(
+        load_entry_point('closure==20161201', 'console_scripts', 'closure')()
+    )

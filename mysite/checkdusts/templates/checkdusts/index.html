@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 640px; width: 480px;}
+  </style>
+  <script
+        src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous">
+  </script>
+</head>
+<body>
+	<button name = 'crawling_button' id = "crawling_button">update!</button>
+  <script>
+    $("#crawling_button").click(function() {
+     $.ajax({
+      type : "GET",
+      url : "./",
+      success : function(data) {
+        console.log(data);
+        alert("update!!!");
+      }
+     }).fail(function() {
+      alert('error');
+     });
+    });
+  </script>
+  <div id = "demo"></div>
+	<div id="map"></div>
+    <script type="text/javascript">
+	function initMap() {
+  		var positionArr = [];
+  		var markerArr = [];
+  		var infowindowArr = [];
+  		var marker;
+  		var infowindow;
+
+  		var map = new google.maps.Map(document.getElementById('map'), {
+    		zoom: 7,
+    		center: {lat : 36.541730, lng : 128.098123}
+  		});
+      map.setOptions({maxZoom : 13, minZoom : 7});
+     
+     {% for information in mySet %}
+        if ('{{ information.name }}' ==  'Incheon (인천)') {
+          infowindow = new google.maps.InfoWindow({
+            content : '인천시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == 'Gimhae (김해시)') {
+          infowindow = new google.maps.InfoWindow({
+            content : '김해시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' ==  'Gimje-si, Jeonbuk, South Korea') {
+          infowindow = new google.maps.InfoWindow({
+            content : '김제시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == "Jincheon-eup, Chungbuk, South Korea") {
+          infowindow = new google.maps.InfoWindow({
+            content : '충북 진천읍' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == 'Sangyeog-dong, Daegu, South Korea') {
+          infowindow = new google.maps.InfoWindow({
+            content : '대구시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == 'Areum-dong, Sejong, South Korea') {
+          infowindow = new google.maps.InfoWindow({
+            content : '세종시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == 'Gumi (구미시)') {
+          infowindow = new google.maps.InfoWindow({
+            content : '구미시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == 'Seoul (서울)') {
+          infowindow = new google.maps.InfoWindow({
+            content : '서울시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == '강릉시 옥천동 강원') {
+          infowindow = new google.maps.InfoWindow({
+            content : '강릉시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        } else if ('{{ information.name }}' == '북구 건국동 광주') {
+          infowindow = new google.maps.InfoWindow({
+            content : '광주시' + ":" + '{{ information.dust }}',
+            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+          });
+          infowindow.open(map);
+        }
+      {% endfor %}
+
+      map.addListener('idle', function() {
+        console.log(infowindowArr)
+        
+        map.addListener('tilesloaded', function() {
+          if (infowindowArr.length !== 0) {
+          infowindowArr.forEach(function(item, index) {
+            item.close();
+          });
+          infowindowArr = [];
+        }
+            if (map.getZoom() >= 11) {
+          var i = 0;
+          {% for information in mySet %}
+            if ({{ information.latitude }} > map.getBounds().f.f - 0.02 && {{ information.latitude }} < map.getBounds().f.b - 0.02 && {{ information.longitude }} > map.getBounds().b.b - 0.02 && {{ information.longitude }} < map.getBounds().b.f - 0.02) {
+              console.log( i, {{ information.latitude }} > map.getBounds().f.f && {{ information.latitude }} < map.getBounds().f.b && {{ information.longitude }} > map.getBounds().b.b && {{ information.longitude }} < map.getBounds().b.f );
+              i += 1;
+              infowindow = new google.maps.InfoWindow({
+                    content : '{{ information.name }}' + "<br>" + '{{ information.dust }}',
+                    position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
+              });
+              infowindowArr.push(infowindow);
+              infowindow.setMap(map);
+            }
+          {% endfor %}
+        } else if (map.getZoom() < 10 && map.getZoom() > 7) {
+          var informArr = [];
+          {% for information in mySet %}
+            informArr.push( { latitude : {{ information.latitude }}, longitude : {{ information.longitude }}, name : '{{ information.name }}', dust : '{{ information.dust}} '});
+          {% endfor %}
+          informArr.sort(function(beforeItem, afterItem) {
+            if (beforeItem.dust > afterItem.dust)
+              return -1;
+            else if (beforeItem.dust < afterItem.dust)
+              return 1;
+            else
+              return 0; 
+          });
+          var count = 0;
+          for (var i = 0 ; i < informArr.length ; i++) {
+            if (count == 5)
+              break;
+            else {
+              if (informArr[i].latitude > map.getBounds().f.f - 0.02 && informArr[i].latitude < map.getBounds().f.b - 0.02 && informArr[i].longitude > map.getBounds().b.b - 0.02 && informArr[i].longitude < map.getBounds().b.f - 0.02) {
+                infowindow = new google.maps.InfoWindow({
+                    content : informArr[i].name + "<br>" + informArr[i].dust,
+                    position : {lat : informArr[i].latitude, lng : informArr[i].longitude }
+                });
+                infowindowArr.push(infowindow);
+                infowindow.setMap(map);
+                count ++;
+              }
+            }
+          } 
+        }
+        });
+      });
+	}
+
+    </script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCsOSPpmnileVyIhwrNpk0FLcvHrWW3zE&callback=initMap">
+    </script>
+
+</body>
+</html>

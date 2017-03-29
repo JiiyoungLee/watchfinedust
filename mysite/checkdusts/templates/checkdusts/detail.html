@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { height: 100%; margin: 0; padding: 0; }
+      #map { height: 100%; }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <h1>{{ location.name }}</h1>
+    <ul>
+		<li>latitude : {{ location.latitude }}</li>
+		<li>longitude : {{ location.longtitude }}</li>
+	</ul>
+    <script type="text/javascript">
+	function initMap() {
+  var chunho = {lat: {{ location.latitude }}, lng: {{ location.longtitude }}};
+  var map = new google.maps.Map(document.getElementById('map'), {
+    zoom: 17,
+    center: chunho
+  });
+
+  var contentString = '{{ location.name }} ' + " : " + '{{ dust.dust }}';
+
+  var infowindow = new google.maps.InfoWindow({
+    content: contentString
+  });
+
+  var marker = new google.maps.Marker({
+    position: chunho,
+    map: map,
+    title: 'chunho Bridge'
+  });
+  marker.addListener('click', function() {
+    infowindow.open(map, marker);
+  });
+}
+
+    </script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCsOSPpmnileVyIhwrNpk0FLcvHrWW3zE&callback=initMap">
+    </script>
+  </body>
+</html>
