@@ -4,6 +4,10 @@
 	<style type="text/css">
       html, body { height: 100%; margin: 0; padding: 0; }
       #map { height: 640px; width: 480px;}
+      .infoClass {
+        color : black;
+        font : 13px bold;
+      }
   </style>
   <script
         src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -27,148 +31,87 @@
      });
     });
   </script>
-  <div id = "demo"></div>
 	<div id="map"></div>
     <script type="text/javascript">
-	function initMap() {
-  		var positionArr = [];
-  		var markerArr = [];
-  		var infowindowArr = [];
-  		var marker;
-  		var infowindow;
+      var map;
+      var infowindowArr = [];
+	    function initMap() {
+        var dustArr = [];
 
-  		var map = new google.maps.Map(document.getElementById('map'), {
-    		zoom: 7,
-    		center: {lat : 36.541730, lng : 128.098123}
-  		});
-      map.setOptions({maxZoom : 13, minZoom : 7});
-     
-     {% for information in mySet %}
-        if ('{{ information.name }}' ==  'Incheon (인천)') {
-          infowindow = new google.maps.InfoWindow({
-            content : '인천시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == 'Gimhae (김해시)') {
-          infowindow = new google.maps.InfoWindow({
-            content : '김해시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' ==  'Gimje-si, Jeonbuk, South Korea') {
-          infowindow = new google.maps.InfoWindow({
-            content : '김제시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == "Jincheon-eup, Chungbuk, South Korea") {
-          infowindow = new google.maps.InfoWindow({
-            content : '충북 진천읍' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == 'Sangyeog-dong, Daegu, South Korea') {
-          infowindow = new google.maps.InfoWindow({
-            content : '대구시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == 'Areum-dong, Sejong, South Korea') {
-          infowindow = new google.maps.InfoWindow({
-            content : '세종시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == 'Gumi (구미시)') {
-          infowindow = new google.maps.InfoWindow({
-            content : '구미시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == 'Seoul (서울)') {
-          infowindow = new google.maps.InfoWindow({
-            content : '서울시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == '강릉시 옥천동 강원') {
-          infowindow = new google.maps.InfoWindow({
-            content : '강릉시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
-        } else if ('{{ information.name }}' == '북구 건국동 광주') {
-          infowindow = new google.maps.InfoWindow({
-            content : '광주시' + ":" + '{{ information.dust }}',
-            position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-          });
-          infowindow.open(map);
+  		  // initialize google map
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 7,
+          center: {lat: 36.141730, lng: 128.098123},
+          maxZoom: 13,
+          minZoom: 7
+        });
+        // idle event listener
+        map.addListener('idle', function() {
+          if (map.getZoom() >= 11) {
+            {% for dustInfo in mySet %}
+              if ({{ dustInfo.latitude }} > map.getBounds().f.f && {{ dustInfo.latitude }} < map.getBounds().f.b && {{ dustInfo.longitude }} > map.getBounds().b.b && {{ dustInfo.longitude }} < map.getBounds().b.f) {
+                dustArr.push({"latitude": {{dustInfo.latitude}}, "longitude" : {{dustInfo.longitude}}, "name": '{{dustInfo.name}}', "dust" : '{{dustInfo.dust}}'});
+              }
+            {% endfor %}
+            setTimeout(makeInfoWindow, 800, dustArr);
+            dustArr = [];  
+          }
+        });
+        map.addListener('drag', function() {
+          setTimeout(closeInfoWindow, 300);
+        });
+	    }
+
+      function changeColor(){
+        var infoArr = [];
+        infoArr = document.getElementsByClassName("infoClass");
+        for (let i = 0; i < infoArr.length; i++) {
+          if (infoArr[i].innerHTML >= 0 && infoArr[i].innerHTML < 31) {
+            infoArr[i].style.color = "#0000cc";
+          } else if (infoArr[i].innerHTML >= 31 && infoArr[i].innerHTML < 81) {
+            infoArr[i].style.color = "#006666";
+          } else if (infoArr[i].innerHTML >= 81 && infoArr[i].innerHTML < 121) {
+            infoArr[i].style.color = "#ff9900";
+          } else if (infoArr[i].innerHTML >= 121 && infoArr[i].innerHTML < 200) {
+            infoArr[i].style.color = "#ff3300";
+          } else {
+            infoArr[i].style.color = "#ff0000";
+          }
         }
-      {% endfor %}
+      }
 
-      map.addListener('idle', function() {
-        console.log(infowindowArr)
-        
-        map.addListener('tilesloaded', function() {
-          if (infowindowArr.length !== 0) {
-          infowindowArr.forEach(function(item, index) {
+      function makeInfoWindow(arr) {
+        var infowindow;
+        console.log(arr);
+        closeInfoWindow();
+        for (let i = 0; i < arr.length; i++) {
+          infowindow = new google.maps.InfoWindow({
+            content: '<div class = "infoClass">' + arr[i].dust + '</div>',
+            position: {lat: arr[i].latitude, lng: arr[i].longitude},
+            disableAutoPan: true
+          });
+          console.log(infowindow);
+          infowindowArr.push(infowindow);
+          infowindow.open(map);
+          changeColor();
+        }
+        console.log("second");
+        console.log(infowindowArr);
+      }
+
+      function closeInfoWindow() {
+        if (infowindowArr.length !== 0) {  
+          infowindowArr.forEach(function(item) {
             item.close();
           });
           infowindowArr = [];
         }
-            if (map.getZoom() >= 11) {
-          var i = 0;
-          {% for information in mySet %}
-            if ({{ information.latitude }} > map.getBounds().f.f - 0.02 && {{ information.latitude }} < map.getBounds().f.b - 0.02 && {{ information.longitude }} > map.getBounds().b.b - 0.02 && {{ information.longitude }} < map.getBounds().b.f - 0.02) {
-              console.log( i, {{ information.latitude }} > map.getBounds().f.f && {{ information.latitude }} < map.getBounds().f.b && {{ information.longitude }} > map.getBounds().b.b && {{ information.longitude }} < map.getBounds().b.f );
-              i += 1;
-              infowindow = new google.maps.InfoWindow({
-                    content : '{{ information.name }}' + "<br>" + '{{ information.dust }}',
-                    position : {lat : {{ information.latitude }}, lng : {{ information.longitude }} }
-              });
-              infowindowArr.push(infowindow);
-              infowindow.setMap(map);
-            }
-          {% endfor %}
-        } else if (map.getZoom() < 10 && map.getZoom() > 7) {
-          var informArr = [];
-          {% for information in mySet %}
-            informArr.push( { latitude : {{ information.latitude }}, longitude : {{ information.longitude }}, name : '{{ information.name }}', dust : '{{ information.dust}} '});
-          {% endfor %}
-          informArr.sort(function(beforeItem, afterItem) {
-            if (beforeItem.dust > afterItem.dust)
-              return -1;
-            else if (beforeItem.dust < afterItem.dust)
-              return 1;
-            else
-              return 0; 
-          });
-          var count = 0;
-          for (var i = 0 ; i < informArr.length ; i++) {
-            if (count == 5)
-              break;
-            else {
-              if (informArr[i].latitude > map.getBounds().f.f - 0.02 && informArr[i].latitude < map.getBounds().f.b - 0.02 && informArr[i].longitude > map.getBounds().b.b - 0.02 && informArr[i].longitude < map.getBounds().b.f - 0.02) {
-                infowindow = new google.maps.InfoWindow({
-                    content : informArr[i].name + "<br>" + informArr[i].dust,
-                    position : {lat : informArr[i].latitude, lng : informArr[i].longitude }
-                });
-                infowindowArr.push(infowindow);
-                infowindow.setMap(map);
-                count ++;
-              }
-            }
-          } 
-        }
-        });
-      });
-	}
+      }
 
+      
     </script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCsOSPpmnileVyIhwrNpk0FLcvHrWW3zE&callback=initMap">
     </script>
-
 </body>
 </html>

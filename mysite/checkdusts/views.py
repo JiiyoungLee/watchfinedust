@@ -20,16 +20,16 @@ def index(request):
     for item in page.json():
         myDict = {}
         try:
-            myDict['latitude'] = item['lat']
-            myDict['longitude'] = item['lon']
-            myDict['name'] = item['city'][item['city'].index('(대한민국')+5:len(item['city']) - 1]
+            myDict["latitude"] = item['lat']
+            myDict["longitude"] = item['lon']
+            myDict["name"] = item['city'][item['city'].index('(대한민국')+5:len(item['city']) - 1]
         except ValueError:
             #pass
-            myDict['name'] = item['city']
+            myDict["name"] = item['city']
         finally:
-            myDict['dust'] = item['aqi']
+            myDict["dust"] = item['aqi']
             mySet.append(myDict)
-    return render(request, 'checkdusts/index.html', {'mySet' : mySet})
+    return render(request, 'checkdusts/index.html', {'mySet':mySet})
 """	mySet = [];
 	dustInfoSet = [];
 
