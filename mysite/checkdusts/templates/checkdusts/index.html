@@ -35,6 +35,7 @@
     <script type="text/javascript">
       var map;
       var infowindowArr = [];
+
 	    function initMap() {
         var dustArr = [];
 
@@ -45,26 +46,29 @@
           maxZoom: 13,
           minZoom: 7
         });
-        // idle event listener
+
+        // save data aquired by scraping
+        {% for dustInfo in mySet %}
+          dustArr.push({"latitude": {{dustInfo.latitude}}, "longitude" : {{dustInfo.longitude}}, "name": '{{dustInfo.name}}', "dust" : '{{dustInfo.dust}}'});
+        {% endfor %}
+
+        // idle event listener(in case zoom in or zoom out, or change location)
         map.addListener('idle', function() {
-          if (map.getZoom() >= 11) {
-            {% for dustInfo in mySet %}
-              if ({{ dustInfo.latitude }} > map.getBounds().f.f && {{ dustInfo.latitude }} < map.getBounds().f.b && {{ dustInfo.longitude }} > map.getBounds().b.b && {{ dustInfo.longitude }} < map.getBounds().b.f) {
-                dustArr.push({"latitude": {{dustInfo.latitude}}, "longitude" : {{dustInfo.longitude}}, "name": '{{dustInfo.name}}', "dust" : '{{dustInfo.dust}}'});
-              }
-            {% endfor %}
+          if (map.getZoom() >= 10) {    
             setTimeout(makeInfoWindow, 800, dustArr);
-            dustArr = [];  
           }
         });
+        // drag event listener(in case change location)
         map.addListener('drag', function() {
           setTimeout(closeInfoWindow, 300);
         });
 	    }
 
+      // change text color displayed on infoWindows in map according to the measurement value of fine dust
       function changeColor(){
         var infoArr = [];
         infoArr = document.getElementsByClassName("infoClass");
+
         for (let i = 0; i < infoArr.length; i++) {
           if (infoArr[i].innerHTML >= 0 && infoArr[i].innerHTML < 31) {
             infoArr[i].style.color = "#0000cc";
@@ -75,30 +79,39 @@
           } else if (infoArr[i].innerHTML >= 121 && infoArr[i].innerHTML < 200) {
             infoArr[i].style.color = "#ff3300";
           } else {
-            infoArr[i].style.color = "#ff0000";
+            infoArr[i].style.color = "#cc0000";
           }
         }
       }
 
+      // display infoWindows, that include in the range of bounds of map
       function makeInfoWindow(arr) {
         var infowindow;
-        console.log(arr);
+
         closeInfoWindow();
+
         for (let i = 0; i < arr.length; i++) {
-          infowindow = new google.maps.InfoWindow({
-            content: '<div class = "infoClass">' + arr[i].dust + '</div>',
-            position: {lat: arr[i].latitude, lng: arr[i].longitude},
-            disableAutoPan: true
-          });
-          console.log(infowindow);
-          infowindowArr.push(infowindow);
-          infowindow.open(map);
-          changeColor();
+          if (arr[i].latitude > map.getBounds().f.f && 
+              arr[i].latitude < map.getBounds().f.b &&
+              arr[i].longitude > map.getBounds().b.b &&
+              arr[i].longitude < map.getBounds().b.f) {
+            infowindow = new google.maps.InfoWindow({
+              content: '<div class = "infoClass">' + arr[i].dust + '</div>',
+              position: {lat: arr[i].latitude, lng: arr[i].longitude},
+              disableAutoPan: true
+            });
+            infowindowArr.push(infowindow);
+
+            // domready event listner(in case div tags included in DOM)
+            infowindow.addListener('domready', function() {
+              changeColor();
+            });
+            infowindow.open(map);           
+          }
         }
-        console.log("second");
-        console.log(infowindowArr);
       }
 
+      // close all InfoWindows displayed in map
       function closeInfoWindow() {
         if (infowindowArr.length !== 0) {  
           infowindowArr.forEach(function(item) {
@@ -107,8 +120,6 @@
           infowindowArr = [];
         }
       }
-
-      
     </script>
     <script async defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCsOSPpmnileVyIhwrNpk0FLcvHrWW3zE&callback=initMap">
